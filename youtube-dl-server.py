@@ -46,12 +46,7 @@ async def parse_url(request):
 
             response = {'links': []}
             for format_lists in info['formats']:
-                if format_lists['acodec'] != 'none' and format_lists['vcodec'] != 'none' and format_lists['resolution'] != 'audio only' and format_lists['ext'] == 'mp4':
-                    response['links'].append({
-                        'format': format_lists['ext'],
-                        'itag': format_lists['resolution'] + '(' + str(format_lists['aspect_ratio']) + ')',
-                        'url': format_lists['url'],
-                    })
+                response['links'].append(format_lists)                
 
         except Exception as e:
             response['error'] = str(e)
