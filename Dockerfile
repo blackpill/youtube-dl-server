@@ -20,8 +20,8 @@ RUN apk --update-cache add --virtual build-dependencies gcc libc-dev make \
 
 COPY . /usr/src/app
 
-EXPOSE 8080
+EXPOSE 50200
 
 VOLUME ["/youtube-dl"]
 
-CMD ["uvicorn", "youtube-dl-server:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "youtube-dl-server:app", "--host", "0.0.0.0", "--port", "50200"]
