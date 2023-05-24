@@ -4,7 +4,7 @@
 # https://github.com/manbearwiz/youtube-dl-server-dockerfile
 #
 
-FROM python:alpine
+FROM registry.us-west-1.aliyuncs.com/jryhd/python:alpine
 
 RUN apk add --no-cache \
   ffmpeg \
