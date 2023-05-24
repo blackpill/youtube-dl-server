@@ -1,6 +1,7 @@
 import sys
 import subprocess
-
+from pprint import pprint
+from urllib.parse import urlparse
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.applications import Starlette
 from starlette.config import Config
@@ -29,6 +30,34 @@ app_defaults = {
 async def dl_queue_list(request):
     return templates.TemplateResponse("index.html", {"request": request, "ytdlp_version": version.__version__})
 
+async def parse_url(request):    
+    video_url = request.query_params['url'].strip()
+    response = {'error': None}
+
+    parsed_url_result = urlparse(video_url)
+    # if parsed_url_result.netloc != 'www.youtube.com':
+    #     response['error'] = 'Unsupported %s!' % video_url
+
+    #     return response
+
+    with YoutubeDL(get_ydlurl_options()) as ydl:
+        try:
+            info = ydl.extract_info(video_url)
+
+            response = {'links': []}
+            for format_lists in info['formats']:
+                if format_lists['acodec'] != 'none' and format_lists['vcodec'] != 'none' and format_lists['resolution'] != 'audio only' and format_lists['ext'] == 'mp4':
+                    response['links'].append({
+                        'format': format_lists['ext'],
+                        'itag': format_lists['resolution'] + '(' + str(format_lists['aspect_ratio']) + ')',
+                        'url': format_lists['url'],
+                    })
+
+        except Exception as e:
+            response['error'] = str(e)
+    return JSONResponse(
+            response
+        )
 
 async def redirect(request):
     return RedirectResponse(url="/youtube-dl")
@@ -119,6 +148,11 @@ def get_ydl_options(request_options):
         "updatetime": ydl_vars["YDL_UPDATE_TIME"] == "True",
     }
 
+def get_ydlurl_options():
+    return {
+        'quiet': True,
+        'simulate': True
+    }
 
 def download(url, request_options):
     with YoutubeDL(get_ydl_options(request_options)) as ydl:
@@ -127,6 +161,7 @@ def download(url, request_options):
 
 routes = [
     Route("/", endpoint=redirect),
+    Route("/youtube-url", endpoint=parse_url),
     Route("/youtube-dl", endpoint=dl_queue_list),
     Route("/youtube-dl/q", endpoint=q_put, methods=["POST"]),
     Route("/youtube-dl/update", endpoint=update_route, methods=["PUT"]),
