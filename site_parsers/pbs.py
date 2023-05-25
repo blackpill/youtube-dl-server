@@ -1,5 +1,5 @@
 from .base import Base
-class Ted(Base):
+class Pbs(Base):
     def __init__(self):
         super().__init__()
         pass
@@ -9,4 +9,4 @@ class Ted(Base):
         return flag
     
     def max_field(self, f):
-        return f['vbr']
+        return f['format_id']
