@@ -1,6 +1,7 @@
 import sys
 import subprocess
 from pprint import pprint
+from importlib import import_module
 from urllib.parse import urlparse
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.applications import Starlette
@@ -12,6 +13,8 @@ from starlette.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 
 from yt_dlp import YoutubeDL, version
+from parser_builder import PaserBuilder
+hosts = import_module('host_dict')
 
 templates = Jinja2Templates(directory="templates")
 config = Config(".env")
@@ -25,7 +28,6 @@ app_defaults = {
     "YDL_ARCHIVE_FILE": config("YDL_ARCHIVE_FILE", default=None),
     "YDL_UPDATE_TIME": config("YDL_UPDATE_TIME", cast=bool, default=True),
 }
-
 
 async def dl_queue_list(request):
     return templates.TemplateResponse("index.html", {"request": request, "ytdlp_version": version.__version__})
@@ -42,17 +44,44 @@ async def parse_url(request):
 
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
-            info = ydl.extract_info(video_url)
-
-            response = {'links': []}
-            for format_lists in info['formats']:
-                response['links'].append(format_lists)                
-
+            info = ydl.extract_info(video_url)            
+            site_name = get_site_name(parsed_url_result)
+            parser = PaserBuilder(site_name)
+            response = parser.get_format(info)                       
         except Exception as e:
+            pprint(e)
             response['error'] = str(e)
     return JSONResponse(
             response
         )
+
+
+def get_url_facebook(info):
+    formats = info['formats']
+    filtered_formats = filter(filter_tiktok, formats)
+    max_formats = max(filtered_formats, key=lambda f:f['width'])
+    result = {
+        'url':  max_formats['url'],
+        'error': None
+    }
+    return result
+
+
+def get_main_domain(url):
+    url_host = url.netloc
+    if url_host is None or url_host.count('.') == 0:
+        return None
+    elif url_host.count('.') == 1:
+        return url_host
+    elif url_host.count('.') > 1:
+        main_host = url_host[url_host[:url_host.rfind(".")].rfind(".") + 1:]
+        return main_host
+    
+def get_site_name(url):
+    main_domain = get_main_domain(url)
+    if main_domain in hosts.host_dict.keys():
+        site_name = hosts.host_dict[main_domain]
+    return site_name
 
 async def redirect(request):
     return RedirectResponse(url="/youtube-dl")
