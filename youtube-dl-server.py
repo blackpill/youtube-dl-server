@@ -32,40 +32,39 @@ app_defaults = {
 async def dl_queue_list(request):
     return templates.TemplateResponse("index.html", {"request": request, "ytdlp_version": version.__version__})
 
-async def parse_url(request):    
+async def get_best_format(request):    
     video_url = request.query_params['url'].strip()
     response = {'error': None}
 
     parsed_url_result = urlparse(video_url)
-    # if parsed_url_result.netloc != 'www.youtube.com':
-    #     response['error'] = 'Unsupported %s!' % video_url
-
-    #     return response
-
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
             info = ydl.extract_info(video_url)            
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
-            response = parser.get_format(info)                       
+            response = parser.get_best_format(info)                       
         except Exception as e:
-            pprint(e)
             response['error'] = str(e)
     return JSONResponse(
             response
         )
 
+async def get_all_formats(request):    
+    video_url = request.query_params['url'].strip()
+    response = {'error': None}
 
-def get_url_facebook(info):
-    formats = info['formats']
-    filtered_formats = filter(filter_tiktok, formats)
-    max_formats = max(filtered_formats, key=lambda f:f['width'])
-    result = {
-        'url':  max_formats['url'],
-        'error': None
-    }
-    return result
-
+    parsed_url_result = urlparse(video_url)
+    with YoutubeDL(get_ydlurl_options()) as ydl:
+        try:
+            info = ydl.extract_info(video_url)            
+            site_name = get_site_name(parsed_url_result)
+            parser = PaserBuilder(site_name)
+            response = parser.get_all_formats(info)                       
+        except Exception as e:
+            response['error'] = str(e)
+    return JSONResponse(
+            response
+        )
 
 def get_main_domain(url):
     url_host = url.netloc
@@ -185,7 +184,8 @@ def download(url, request_options):
 
 routes = [
     Route("/", endpoint=redirect),
-    Route("/youtube-url", endpoint=parse_url),
+    Route("/bestformat", endpoint=get_best_format),
+    Route("/allformats", endpoint=get_all_formats),
     Route("/youtube-dl", endpoint=dl_queue_list),
     Route("/youtube-dl/q", endpoint=q_put, methods=["POST"]),
     Route("/youtube-dl/update", endpoint=update_route, methods=["PUT"]),

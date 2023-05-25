@@ -5,5 +5,8 @@ class PaserBuilder:
         class_args = ()
         self.parser = getattr(globals()[site_name.lower()], site_name)(*class_args)
 
-    def get_format(self, info):
-        return self.parser.get_format(info)
+    def get_best_format(self, info):
+        return self.parser.get_best_format(info)
+    
+    def get_all_formats(self, info):
+        return self.parser.get_all_formats(info)

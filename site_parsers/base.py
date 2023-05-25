@@ -16,7 +16,7 @@ class Base:
     def max_field(self, f):
         return f['width']
     
-    def get_format(self, info):
+    def get_best_format(self, info):
         formats = info['formats']
         try:
             filtered_formats = filter(self.filter_func, formats)
@@ -24,4 +24,12 @@ class Base:
             pprint(e)
         result = max(filtered_formats, key=self.max_field)        
         result['error'] = None
+        return result
+    
+    def get_all_formats(self, info):
+        formats = info['formats']
+        result = {
+            "formats": formats,
+            "error": None
+        }
         return result
