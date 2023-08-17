@@ -3,6 +3,7 @@ import subprocess
 from pprint import pprint
 from importlib import import_module
 from urllib.parse import urlparse
+import traceback
 from starlette.status import HTTP_303_SEE_OTHER
 from starlette.applications import Starlette
 from starlette.config import Config
@@ -14,6 +15,9 @@ from starlette.background import BackgroundTask
 
 from yt_dlp import YoutubeDL, version
 from parser_builder import PaserBuilder
+from loguru import logger
+
+logger.add("daily.log", rotation="0:00")
 hosts = import_module('host_dict')
 
 templates = Jinja2Templates(directory="templates")
@@ -35,16 +39,18 @@ async def dl_queue_list(request):
 async def get_best_format(request):    
     video_url = request.query_params['url'].strip()
     response = {'error': None}
-
+    logger.info("bestformat: " + video_url)
     parsed_url_result = urlparse(video_url)
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
             info = ydl.extract_info(video_url)            
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
-            response = parser.get_best_format(info)                       
+            response = parser.get_best_format(info)
+            logger.info("bestformat: " + str(response))
         except Exception as e:
             response['error'] = str(e)
+            logger.exception("bestformat: " + str(e))
     return JSONResponse(
             response
         )
@@ -56,11 +62,13 @@ async def get_all_formats(request):
     parsed_url_result = urlparse(video_url)
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
-            info = ydl.extract_info(video_url)            
+            info = ydl.extract_info(video_url)
+            pprint(parsed_url_result)
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
             response = parser.get_all_formats(info)                       
         except Exception as e:
+            traceback.print_exc()
             response['error'] = str(e)
     return JSONResponse(
             response
@@ -78,6 +86,7 @@ def get_main_domain(url):
     
 def get_site_name(url):
     main_domain = get_main_domain(url)
+    print(f'main_domain = {main_domain}')
     if main_domain in hosts.host_dict.keys():
         site_name = hosts.host_dict[main_domain]
     return site_name
