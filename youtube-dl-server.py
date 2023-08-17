@@ -20,7 +20,7 @@ from discord_webhook import DiscordWebhook
 
 webhook_url = "https://discord.com/api/webhooks/1141653282310328341/I8r9OndQBVH7ZxQli9CPKkzYPLzbmWzzqpx8594A15GrBrZnPzDYOYshio0JgC8HHgZM"
 
-logger.add("daily.log", rotation="0:00")
+logger.add("/localroot/daily.log", rotation="0:00")
 hosts = import_module('host_dict')
 
 templates = Jinja2Templates(directory="templates")
