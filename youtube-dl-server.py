@@ -16,6 +16,9 @@ from starlette.background import BackgroundTask
 from yt_dlp import YoutubeDL, version
 from parser_builder import PaserBuilder
 from loguru import logger
+from discord_webhook import DiscordWebhook
+
+webhook_url = "https://discord.com/api/webhooks/1141653282310328341/I8r9OndQBVH7ZxQli9CPKkzYPLzbmWzzqpx8594A15GrBrZnPzDYOYshio0JgC8HHgZM"
 
 logger.add("daily.log", rotation="0:00")
 hosts = import_module('host_dict')
@@ -39,7 +42,7 @@ async def dl_queue_list(request):
 async def get_best_format(request):    
     video_url = request.query_params['url'].strip()
     response = {'error': None}
-    logger.info("bestformat: " + video_url)
+    logger.info(video_url)
     parsed_url_result = urlparse(video_url)
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
@@ -47,10 +50,12 @@ async def get_best_format(request):
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
             response = parser.get_best_format(info)
-            logger.info("bestformat: " + str(response))
+            logger.info(str(response))
+            webhook = DiscordWebhook(url="your webhook url", content=video_url + " -> " + str(response), wait=True)
+            resp = webhook.execute()
         except Exception as e:
             response['error'] = str(e)
-            logger.exception("bestformat: " + str(e))
+            logger.exception(str(e))
     return JSONResponse(
             response
         )
