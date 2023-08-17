@@ -51,7 +51,7 @@ async def get_best_format(request):
             parser = PaserBuilder(site_name)
             response = parser.get_best_format(info)
             logger.info(str(response))
-            webhook = DiscordWebhook(url="your webhook url", content=video_url + " -> " + str(response), wait=True)
+            webhook = DiscordWebhook(url=webhook_url, content=video_url + " -> " + str(response), wait=True)
             resp = webhook.execute()
         except Exception as e:
             response['error'] = str(e)
