@@ -9,6 +9,7 @@ class Base:
         print('base filter')
         flag = f['protocol'] == "https" \
            and 'width' in f \
+           and f['width'] \
            and f['width'] <= self.max_width
         return flag
     
