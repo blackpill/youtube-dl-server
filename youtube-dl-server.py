@@ -94,6 +94,8 @@ def get_site_name(url):
     print(f'main_domain = {main_domain}')
     if main_domain in hosts.host_dict.keys():
         site_name = hosts.host_dict[main_domain]
+    else:
+        site_name = 'Base'
     return site_name
 
 async def redirect(request):
