@@ -46,7 +46,7 @@ async def get_best_format(request):
     parsed_url_result = urlparse(video_url)
     with YoutubeDL(get_ydlurl_options()) as ydl:
         try:
-            info = ydl.extract_info(video_url)            
+            info = ydl.extract_info(video_url)
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
             response = parser.get_best_format(info)
@@ -54,7 +54,9 @@ async def get_best_format(request):
             webhook = DiscordWebhook(url=webhook_url, content=video_url + " -> " + str(response), wait=True)
             resp = webhook.execute()
         except Exception as e:
-            response['error'] = str(e)
+            error_strs = str(e).split(":")            
+            response['error'] = error_strs[-1]
+            pprint(response)
             logger.exception(str(e))
     return JSONResponse(
             response
@@ -71,10 +73,13 @@ async def get_all_formats(request):
             pprint(parsed_url_result)
             site_name = get_site_name(parsed_url_result)
             parser = PaserBuilder(site_name)
-            response = parser.get_all_formats(info)                       
+            response = parser.get_all_formats(info)
+            pprint(response)
         except Exception as e:
             traceback.print_exc()
-            response['error'] = str(e)
+            error_strs = str(e).split(":")            
+            response['error'] = error_strs[-1]
+            pprint(response)
     return JSONResponse(
             response
         )
@@ -208,6 +213,3 @@ routes = [
 ]
 
 app = Starlette(debug=True, routes=routes)
-
-print("Updating youtube-dl to the newest version")
-update()
