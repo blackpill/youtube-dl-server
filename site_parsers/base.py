@@ -21,10 +21,14 @@ class Base:
         formats = info['formats']
         try:
             filtered_formats = filter(self.filter_func, formats)
+            if len(filtered_formats) > 0:
+                result = max(filtered_formats, key=self.max_field)        
+                result['error'] = None
+            else:
+                result['error'] = 'Cannot get valid video'
         except Exception as e:
             pprint(e)
-        result = max(filtered_formats, key=self.max_field)        
-        result['error'] = None
+
         return result
     
     def get_all_formats(self, info):
