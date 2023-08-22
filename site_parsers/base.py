@@ -19,16 +19,19 @@ class Base:
     
     def get_best_format(self, info):
         formats = info['formats']
+        result = {
+            "error": None
+        }
         try:
             filtered_formats = filter(self.filter_func, formats)
-            if len(filtered_formats) > 0:
-                result = max(filtered_formats, key=self.max_field)        
-                result['error'] = None
+            if len(list(filtered_formats)) > 0:
+                result = max(filtered_formats, key=self.max_field)                
             else:
-                result['error'] = 'Cannot get valid video'
+                result['error'] = 'No supported video exists'
         except Exception as e:
             pprint(e)
-
+            error_strs = str(e).split(":")            
+            result['error'] = error_strs[-1]
         return result
     
     def get_all_formats(self, info):
