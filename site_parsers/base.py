@@ -24,8 +24,9 @@ class Base:
         }
         try:
             filtered_formats = filter(self.filter_func, formats)
-            if len(list(filtered_formats)) > 0:
-                result = max(filtered_formats, key=self.max_field)                
+            format_lists = list(filtered_formats)
+            if len(format_lists) > 0:
+                result = max(format_lists, key=self.max_field)                
             else:
                 result['error'] = 'No supported video exists'
         except Exception as e:
