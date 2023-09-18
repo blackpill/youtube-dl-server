@@ -19,7 +19,7 @@ from loguru import logger
 from discord_webhook import DiscordWebhook
 
 webhook_url = "https://discord.com/api/webhooks/1141653282310328341/I8r9OndQBVH7ZxQli9CPKkzYPLzbmWzzqpx8594A15GrBrZnPzDYOYshio0JgC8HHgZM"
-test_url = "https://youtu.be/LRjtX7Mrk4M"
+test_url = "https://youtu.be/ixLnKFQ4EfQ"
 
 logger.add("/localroot/daily.log", rotation="0:00")
 hosts = import_module('host_dict')
@@ -60,7 +60,7 @@ async def get_best_format(request):
                 response['error'] = error_strs[-1]
                 pprint(response)
                 logger.exception(str(e))
-                
+
     return JSONResponse(
             response
         )
