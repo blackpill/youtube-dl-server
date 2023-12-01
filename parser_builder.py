@@ -8,5 +8,8 @@ class PaserBuilder:
     def get_best_format(self, info):
         return self.parser.get_best_format(info)
     
+    def get_best_audio(self, info):
+        return self.parser.get_best_audio(info)
+    
     def get_all_formats(self, info):
         return self.parser.get_all_formats(info)

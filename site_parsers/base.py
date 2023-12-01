@@ -13,9 +13,21 @@ class Base:
            and f['width'] <= self.max_width
         return flag
     
+        # set the criteria which formats can be played
+    def audio_filter_func(self, f):
+        print('audio base filter')
+        flag = f['protocol'] == "https" \
+           and f['ext'] == "m4a" \
+           and f['resolution'] == "audio only"
+        return flag
+    
     # set the field, which is used to choose the best resolution
     def max_field(self, f):
         return f['width']
+    
+        # set the field, which is used to choose the best resolution
+    def max_audio_field(self, f):
+        return f['filesize']
     
     def get_best_format(self, info):
         formats = info['formats']
@@ -29,6 +41,24 @@ class Base:
                 result = max(format_lists, key=self.max_field)                
             else:
                 result['error'] = 'No supported video exists'
+        except Exception as e:
+            pprint(e)
+            error_strs = str(e).split(":")            
+            result['error'] = error_strs[-1]
+        return result
+    
+    def get_best_audio(self, info):
+        formats = info['formats']
+        result = {
+            "error": None
+        }
+        try:
+            filtered_formats = filter(self.audio_filter_func, formats)
+            format_lists = list(filtered_formats)
+            if len(format_lists) > 0:
+                result = max(format_lists, key=self.max_audio_field)                
+            else:
+                result['error'] = 'No supported audio exists'
         except Exception as e:
             pprint(e)
             error_strs = str(e).split(":")            

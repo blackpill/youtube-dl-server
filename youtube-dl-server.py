@@ -65,6 +65,31 @@ async def get_best_format(request):
             response
         )
 
+async def get_best_audio(request):    
+    video_url = request.query_params['url'].strip()
+    response = {'error': None}
+    if video_url != test_url:
+        logger.info(video_url)
+        parsed_url_result = urlparse(video_url)
+        with YoutubeDL(get_ydlurl_options()) as ydl:
+            try:
+                info = ydl.extract_info(video_url)
+                site_name = get_site_name(parsed_url_result)
+                parser = PaserBuilder(site_name)
+                response = parser.get_best_audio(info)
+                logger.info(str(response))
+                webhook = DiscordWebhook(url=webhook_url, content=video_url + " -> " + str(response), wait=True)
+                resp = webhook.execute()
+            except Exception as e:
+                error_strs = str(e).split(":")            
+                response['error'] = error_strs[-1]
+                pprint(response)
+                logger.exception(str(e))
+
+    return JSONResponse(
+            response
+        )
+
 async def get_all_formats(request):    
     video_url = request.query_params['url'].strip()
     response = {'error': None}
@@ -209,6 +234,7 @@ def download(url, request_options):
 routes = [
     Route("/", endpoint=redirect),
     Route("/bestformat", endpoint=get_best_format),
+    Route("/bestaudio", endpoint=get_best_audio),
     Route("/allformats", endpoint=get_all_formats),
     Route("/youtube-dl", endpoint=dl_queue_list),
     Route("/youtube-dl/q", endpoint=q_put, methods=["POST"]),
