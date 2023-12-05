@@ -11,4 +11,5 @@ host_dict = {
     "espn.com": "Espn",
     "nfl.com": "Base",
     "pbs.org": "Pbs",
+    "usatoday.com": "Base"
 }

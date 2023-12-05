@@ -89,6 +89,27 @@ async def get_best_audio(request):
     return JSONResponse(
             response
         )
+async def get_all_streams(request):    
+    video_url = request.query_params['url'].strip()
+    response = {'error': None}
+
+    parsed_url_result = urlparse(video_url)
+    with YoutubeDL(get_ydlurl_options()) as ydl:
+        try:
+            info = ydl.extract_info(video_url)
+            pprint(parsed_url_result)
+            site_name = get_site_name(parsed_url_result)
+            parser = PaserBuilder(site_name)
+            response = parser.get_all_streams(info)
+            pprint(response)
+        except Exception as e:
+            traceback.print_exc()
+            error_strs = str(e).split(":")            
+            response['error'] = error_strs[-1]
+            pprint(response)
+    return JSONResponse(
+            response
+        )
 
 async def get_all_formats(request):    
     video_url = request.query_params['url'].strip()
@@ -236,6 +257,7 @@ routes = [
     Route("/bestformat", endpoint=get_best_format),
     Route("/bestaudio", endpoint=get_best_audio),
     Route("/allformats", endpoint=get_all_formats),
+    Route("/allstreams", endpoint=get_all_streams),
     Route("/youtube-dl", endpoint=dl_queue_list),
     Route("/youtube-dl/q", endpoint=q_put, methods=["POST"]),
     Route("/youtube-dl/update", endpoint=update_route, methods=["PUT"]),

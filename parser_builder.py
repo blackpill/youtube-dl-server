@@ -13,3 +13,6 @@ class PaserBuilder:
     
     def get_all_formats(self, info):
         return self.parser.get_all_formats(info)
+    
+    def get_all_streams(self, info):
+        return self.parser.get_all_streams(info)
